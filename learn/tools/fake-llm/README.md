@@ -109,6 +109,7 @@ node learn/tools/fake-llm/server.ts --script learn/tools/fake-llm/scripts/tool-t
 --delay <毫秒>           流式片段之间的延迟，默认 30（设成 0 最快）
 --context-window <数字>  模拟上下文窗口，请求超过它就返回"上下文过长"错误（里程碑 15 用）
 --no-auth                不检查 API key
+--chop                   把流式响应切成随机大小的碎片发送，故意把一行甚至一个汉字切成两半（里程碑 05 用来检验你的解析器）
 ```
 
 ## 在代码里启动

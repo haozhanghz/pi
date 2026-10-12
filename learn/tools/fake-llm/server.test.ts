@@ -219,3 +219,33 @@ describe("fake-llm script 模式", () => {
 		}
 	});
 });
+
+describe("fake-llm chop 模式", () => {
+	test("碎片拼起来仍然是完整、合法的 SSE", async () => {
+		const server = await startFakeLlm({ port: 0, delayMs: 0, chop: true, script: [{ text: "你好，世界！这是一段会被切碎的中文。" }] });
+		try {
+			const res = await fetch(`${server.url}/v1/chat/completions`, {
+				method: "POST",
+				headers: { Authorization: "Bearer fake" },
+				body: JSON.stringify({ model: "m", stream: true, messages: [{ role: "user", content: "x" }] }),
+			});
+			let pieces = 0;
+			const decoder = new TextDecoder();
+			let text = "";
+			for await (const chunk of res.body as AsyncIterable<Uint8Array>) {
+				pieces++;
+				text += decoder.decode(chunk, { stream: true });
+			}
+			text += decoder.decode();
+			assert.ok(pieces > 10, `应该被切成很多块，实际 ${pieces} 块`);
+			const content = text
+				.split("\n")
+				.filter((line) => line.startsWith("data: ") && line !== "data: [DONE]")
+				.map((line) => JSON.parse(line.slice(6)).choices[0]?.delta?.content ?? "")
+				.join("");
+			assert.equal(content, "你好，世界！这是一段会被切碎的中文。");
+		} finally {
+			await server.close();
+		}
+	});
+});

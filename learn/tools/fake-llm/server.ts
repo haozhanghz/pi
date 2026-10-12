@@ -76,6 +76,11 @@ export interface FakeLlmOptions {
 	log?: (line: string) => void;
 	/** 是否打印完整请求体 */
 	verbose?: boolean;
+	/**
+	 * 把流式响应切成随机大小（1~40 字节）的碎片再发送，故意把一行、甚至一个汉字切成两半。
+	 * 用来检验你的 SSE 解析器是否足够健壮。
+	 */
+	chop?: boolean;
 }
 
 /** 服务器记录下来的每个请求，测试可以检查"客户端到底发了什么" */
@@ -483,6 +488,26 @@ interface ReplyMeta {
 	completionTokens: number;
 	delayMs: number;
 	includeUsage: boolean;
+	chop: boolean;
+}
+
+/**
+ * 往响应里写一段 SSE 文本。chop 模式下把它切成随机大小的字节碎片，
+ * 每片之间稍等一下，确保客户端是分多次收到的。
+ */
+async function writeSse(res: ServerResponse, text: string, meta: ReplyMeta): Promise<void> {
+	if (!meta.chop) {
+		res.write(text);
+		return;
+	}
+	const bytes = Buffer.from(text, "utf-8");
+	let offset = 0;
+	while (offset < bytes.length) {
+		const size = 1 + Math.floor(Math.random() * 40);
+		res.write(bytes.subarray(offset, offset + size));
+		offset += size;
+		await sleep(1);
+	}
 }
 
 function withIds(reply: FakeReply, prefix: string) {
@@ -549,7 +574,7 @@ async function sendOpenAIStream(
 	const send = async (choices: unknown[], extra: Record<string, unknown> = {}) => {
 		if (isClosed()) return;
 		const chunk = { id, object: "chat.completion.chunk", created, model: meta.model, choices, ...extra };
-		res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+		await writeSse(res, `data: ${JSON.stringify(chunk)}\n\n`, meta);
 		if (meta.delayMs > 0) await sleep(meta.delayMs);
 	};
 	const delta = (d: Record<string, unknown>, finish: string | null = null) => [
@@ -580,7 +605,7 @@ async function sendOpenAIStream(
 		await send([], { usage: openAIUsage(meta) });
 	}
 	if (!isClosed()) {
-		res.write("data: [DONE]\n\n");
+		await writeSse(res, "data: [DONE]\n\n", meta);
 		res.end();
 	}
 }
@@ -624,7 +649,7 @@ async function sendAnthropicStream(
 	});
 	const send = async (event: string, data: Record<string, unknown>) => {
 		if (isClosed()) return;
-		res.write(`event: ${event}\ndata: ${JSON.stringify({ type: event, ...data })}\n\n`);
+		await writeSse(res, `event: ${event}\ndata: ${JSON.stringify({ type: event, ...data })}\n\n`, meta);
 		if (meta.delayMs > 0) await sleep(meta.delayMs);
 	};
 
@@ -840,6 +865,7 @@ export async function startFakeLlm(options: FakeLlmOptions = {}): Promise<FakeLl
 			completionTokens: estimateTokens(completionText),
 			delayMs: reply.delayMs ?? delayMs,
 			includeUsage: normalized.includeUsage,
+			chop: options.chop === true,
 		};
 
 		// 客户端中途断开（比如用户按了 Ctrl+C）时，停止继续发送
@@ -906,6 +932,7 @@ const HELP = `假模型服务器（课程用）
   --context-window <数字>  模拟上下文窗口，超过就返回"上下文过长"错误
   --no-auth                不检查 API key
   --verbose                打印每个请求的完整 JSON（强烈推荐学习时打开）
+  --chop                   把流式响应切成随机大小的碎片发送（检验 SSE 解析器，里程碑 05 用）
   -h, --help               显示帮助
 
 rules 模式能听懂的话（需要请求里带了对应的工具）：
@@ -931,6 +958,7 @@ if (isMainModule) {
 			"context-window": { type: "string" },
 			"no-auth": { type: "boolean", default: false },
 			verbose: { type: "boolean", default: false },
+			chop: { type: "boolean", default: false },
 			help: { type: "boolean", short: "h", default: false },
 		},
 	});
@@ -959,6 +987,7 @@ if (isMainModule) {
 		requireApiKey: !values["no-auth"],
 		contextWindow: values["context-window"] ? Number(values["context-window"]) : undefined,
 		verbose: values.verbose,
+		chop: values.chop,
 		log: (line) => console.log(line),
 	});
 
