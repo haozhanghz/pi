@@ -586,7 +586,7 @@ node --env-file=.env playground/agent-demo.ts --model deepseek/deepseek-chat
 | `src/agent/loop.ts` | `runAgentLoop(prompts, context, config, emit, signal?)` |
 | `src/agent/index.ts` | 导出以上所有内容 |
 
-把参考答案的 `test/` 复制到你的项目，运行 `npm test`。本章新增了 `agent-loop.test.ts`（14 个测试）和 `validate.test.ts`（5 个测试），全部使用假模型，不需要网络。
+把参考答案的 `test/` 复制到你的项目，运行 `npm test`。本章新增了 `agent-loop.test.ts`（13 个测试）和 `validate.test.ts`（5 个测试），全部使用假模型，不需要网络。
 
 `agent-loop.test.ts` 值得仔细读一读：它就是本章的"规格说明书"，每个测试的名字都是一条规则。例如：
 
