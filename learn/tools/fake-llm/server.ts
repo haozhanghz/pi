@@ -420,7 +420,52 @@ function parseIntent(segment: string): Intent | undefined {
 	return undefined;
 }
 
+/**
+ * 上下文压缩（里程碑 15）时，agent 会请模型总结对话。假模型从对话里摘出用户的请求和工具调用，拼出一份结构化的总结。
+ * 系统提示词里有"上下文总结助手"（或者 pi 的英文版 "context summarization assistant"）就认为是总结请求。
+ */
+function summaryBrain(req: NormalizedRequest): FakeReply | undefined {
+	if (!/上下文总结助手|context summarization assistant/i.test(req.system)) return undefined;
+	const prompt = [...req.messages].reverse().find((m) => m.role === "user")?.text ?? "";
+	const conversation = prompt.match(/<conversation>([\s\S]*?)<\/conversation>/)?.[1] ?? "";
+	const previous = prompt.match(/<previous-summary>([\s\S]*?)<\/previous-summary>/)?.[1] ?? "";
+	const requests = [...conversation.matchAll(/^\[(?:用户|User)\][：:]\s*(.+)$/gm)].map((m) => m[1].trim());
+	const calls = [...conversation.matchAll(/^\[(?:助手调用工具|Assistant tool calls)\][：:]\s*(.+)$/gm)].map((m) => m[1].trim());
+	// 之前总结里的目标也保留下来
+	const previousGoals = (previous.match(/## 目标\n([\s\S]*?)\n\n/)?.[1] ?? "")
+		.split("\n")
+		.map((line) => line.replace(/^-\s*/, "").trim())
+		.filter((line) => line && !line.startsWith("（"));
+	const goals = [...new Set([...previousGoals, ...requests])];
+	const list = (items: string[], prefix: string) => (items.length > 0 ? items.map((item) => `${prefix}${item}`).join("\n") : "- （没有）");
+	const text = `## 目标
+${list(goals.slice(-10), "- ")}
+
+## 约束和偏好
+- （没有）
+
+## 进展
+### 已完成
+${list(calls.slice(-10), "- [x] ")}
+
+### 进行中
+- [ ] ${requests.at(-1) ?? goals.at(-1) ?? "（没有）"}
+
+## 关键决定
+- （没有）
+
+## 下一步
+1. 继续完成用户最后的请求
+
+## 关键上下文
+- 这份总结是假模型拼出来的，只用来演示压缩的流程`;
+	return { text };
+}
+
 function rulesBrain(req: NormalizedRequest): FakeReply {
+	const summary = summaryBrain(req);
+	if (summary) return summary;
+
 	// 找到最后一条"用户说的话"
 	let lastUserIndex = -1;
 	for (let i = req.messages.length - 1; i >= 0; i--) {
@@ -430,7 +475,10 @@ function rulesBrain(req: NormalizedRequest): FakeReply {
 		}
 	}
 	if (lastUserIndex === -1) return echoBrain(req);
-	const userText = req.messages[lastUserIndex].text;
+	let userText = req.messages[lastUserIndex].text;
+	// 上下文压缩之后（里程碑 15），最后一条"用户消息"可能是那份总结：从总结的"进行中"里找出用户正在做的事
+	const inProgress = userText.includes("<summary>") ? userText.match(/### 进行中\n- \[ \] (.+)/)?.[1] : undefined;
+	if (inProgress) userText = inProgress;
 
 	// "A 同时 B" = 并行；"A 然后 B" = 一步一步来
 	const parallel = /同时/.test(userText);
@@ -823,8 +871,11 @@ export async function startFakeLlm(options: FakeLlmOptions = {}): Promise<FakeLl
 			log(`[${time}] 收到请求体：\n${JSON.stringify(body, null, 2)}`);
 		}
 
-		// 估算输入 token 数，并模拟"上下文过长"
-		const promptText = normalized.system + normalized.messages.map((m) => m.text + JSON.stringify(m.toolCalls ?? [])).join("");
+		// 估算输入 token 数，并模拟"上下文过长"。和真实的服务商一样，工具定义也算在输入里
+		const promptText =
+			normalized.system +
+			normalized.messages.map((m) => m.text + JSON.stringify(m.toolCalls ?? [])).join("") +
+			JSON.stringify(body.tools ?? []);
 		const promptTokens = estimateTokens(promptText);
 		if (options.contextWindow !== undefined && promptTokens > options.contextWindow) {
 			const message = `This model's maximum context length is ${options.contextWindow} tokens. However, your messages resulted in ${promptTokens} tokens.`;

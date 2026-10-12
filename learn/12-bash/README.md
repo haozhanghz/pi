@@ -145,8 +145,11 @@ export function killProcessTree(pid: number): void {
 怎样测试"子进程也被终止了"？`test/bash.test.ts` 用了一个小技巧：让后台的子进程每 50 毫秒往文件里写一行，取消之后，看文件还会不会变大：
 
 ```ts
-const command = "(while true; do echo x >> heartbeat.txt; sleep 0.05; done) & echo 已启动; wait";
+const command =
+	"(while true; do echo x >> heartbeat.txt; sleep 0.05; done) & while [ ! -s heartbeat.txt ]; do sleep 0.01; done; echo 已启动; wait";
 ```
+
+（中间的 `while [ ! -s heartbeat.txt ]` 等到文件里有了内容才打印"已启动"。否则在电脑很忙的时候，后台进程可能还没来得及写第一行就被终止了，测试会因为找不到文件而失败——这种"偶尔失败"的测试最让人头疼。）
 
 你可以做个实验：把 `process.kill(-pid, "SIGKILL")` 改成 `process.kill(pid, "SIGKILL")`（只终止 bash），这个测试就会失败。
 

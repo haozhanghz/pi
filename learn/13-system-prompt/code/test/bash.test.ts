@@ -64,8 +64,10 @@ test("取消：终止命令", async (t) => {
 test("取消时，命令启动的子进程也被终止", async (t) => {
 	const dir = await makeTempDir(t);
 	const controller = new AbortController();
-	// 在后台启动一个子进程：每 50 毫秒往文件里写一行。它被终止后，文件就不再变大了
-	const command = "(while true; do echo x >> heartbeat.txt; sleep 0.05; done) & echo 已启动; wait";
+	// 在后台启动一个子进程：每 50 毫秒往文件里写一行。它被终止后，文件就不再变大了。
+	// 等文件里有了内容再打印"已启动"，保证取消的时候后台进程已经在工作了
+	const command =
+		"(while true; do echo x >> heartbeat.txt; sleep 0.05; done) & while [ ! -s heartbeat.txt ]; do sleep 0.01; done; echo 已启动; wait";
 	const running = createBashTool(dir).execute("id", { command }, controller.signal, () => controller.abort());
 	await assert.rejects(running, /取消/);
 

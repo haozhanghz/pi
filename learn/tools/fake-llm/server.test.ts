@@ -172,6 +172,21 @@ describe("fake-llm server", () => {
 		assert.equal(recorded.normalized.model, "check-model");
 		assert.equal(recorded.api, "openai");
 	});
+
+	test("总结请求（上下文压缩）：返回结构化的总结", async () => {
+		const prompt = "<conversation>\n[用户]：重构登录模块\n\n[助手调用工具]：read(path=\"src/auth.ts\")\n\n[工具结果]：……\n</conversation>\n\n写一份总结";
+		const { status, json } = await openai(server, {
+			model: "fake-model",
+			messages: [
+				{ role: "system", content: "你是一个上下文总结助手。" },
+				{ role: "user", content: prompt },
+			],
+		});
+		assert.equal(status, 200);
+		const text: string = json.choices[0].message.content;
+		assert.match(text, /## 目标\n- 重构登录模块/);
+		assert.match(text, /- \[x\] read\(path="src\/auth\.ts"\)/);
+	});
 });
 
 describe("fake-llm script 模式", () => {
