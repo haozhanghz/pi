@@ -58,11 +58,11 @@ test/
 ```json
 	"scripts": {
 		"check": "tsc",
-		"test": "node --test"
+		"test": "node --test test/*.test.ts"
 	},
 ```
 
-`node --test` 会自动找到项目里所有 `*.test.ts` 文件并运行。
+`npm test` 会运行 `test/` 目录下所有 `*.test.ts` 文件。（直接运行不带参数的 `node --test` 也可以，但它会把 `test/` 目录下的所有文件——包括辅助文件——都当成测试文件运行一遍，所以我们明确指定文件名模式。）
 
 ## 2. 问题：每家服务商都不一样
 
@@ -661,11 +661,11 @@ test("1 加 1 等于 2", () => {
 - `assert.equal(实际, 期望)` 判断相等；`assert.deepEqual` 比较对象和数组的内容；`assert.match(字符串, 正则)` 判断字符串匹配；`assert.ok(条件)` 判断为真。
 - 断言失败会抛出异常，这个测试就算失败。
 
-运行 `npm test`（或者 `node --test`），会看到：
+运行 `npm test`，会看到：
 
 ```
-# tests 22
-# pass 22
+# tests 21
+# pass 21
 # fail 0
 ```
 
