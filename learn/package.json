@@ -1,0 +1,9 @@
+{
+	"name": "mini-pi-course",
+	"private": true,
+	"type": "module",
+	"description": "从零写出 pi：一套面向完全新手的 coding agent 课程",
+	"engines": {
+		"node": ">=22.18.0"
+	}
+}

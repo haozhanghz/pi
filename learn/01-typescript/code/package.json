@@ -1,0 +1,13 @@
+{
+	"name": "my-pi",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"check": "tsc"
+	},
+	"devDependencies": {
+		"@types/node": "24.19.2",
+		"typescript": "7.0.2"
+	}
+}

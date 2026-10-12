@@ -1,0 +1,4 @@
+[
+	{ "text": "我先看看当前目录里有什么。", "toolCalls": [{ "name": "bash", "arguments": { "command": "ls" } }] },
+	{ "text": "看完了，目录里的文件我都列在上面了。" }
+]

@@ -1,0 +1,4 @@
+[
+	{ "error": { "status": 429, "message": "Rate limit exceeded, please retry later", "type": "rate_limit_error" } },
+	{ "text": "重试成功了！" }
+]
