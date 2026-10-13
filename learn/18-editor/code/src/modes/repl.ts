@@ -1,5 +1,5 @@
 // 交互模式（简单版）：一行一行地读取输入，把 agent 的事件打印出来。
-// 里程碑 18 会用全屏的终端界面替换它。
+// 里程碑 19 会用全屏的终端界面替换它。
 // 输入和输出可以替换成别的流，测试时就不需要真的终端。
 import { createInterface } from "node:readline";
 import type { BeforeToolCall } from "../agent/index.ts";
