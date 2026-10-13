@@ -39,7 +39,7 @@ $ node playground/agent-demo.ts
 - 记住"是否正在运行"：用一个 `current` 变量；
 - 运行期间用户输入的内容：被 `for await` 卡住了，只能等运行结束才处理。
 
-到了里程碑 18 的全屏界面，关心 agent 状态的地方更多：输入框（运行中按回车是插话）、状态栏（"正在执行 bash……"）、消息列表、会话文件（里程碑 14）……把这些状态集中放在一个对象里，让需要的地方订阅它的事件，是最自然的做法。
+到了里程碑 19 的全屏界面，关心 agent 状态的地方更多：输入框（运行中按回车是插话）、状态栏（"正在执行 bash……"）、消息列表、会话文件（里程碑 14）……把这些状态集中放在一个对象里，让需要的地方订阅它的事件，是最自然的做法。
 
 另外，真实使用时有两个很常见的需求：
 
@@ -80,7 +80,7 @@ export interface AgentState {
 }
 ```
 
-前四个是"配置和数据"，可以在两次运行之间修改，比如 `agent.state.model = otherModel` 换一个模型（里程碑 19）。后四个是"运行时的状态"，给界面读的：`streamingMessage` 用来显示模型正在输入的内容，`pendingToolCalls` 用来显示"正在执行……"。
+前四个是"配置和数据"，可以在两次运行之间修改，比如 `agent.state.model = otherModel` 换一个模型（里程碑 20）。后四个是"运行时的状态"，给界面读的：`streamingMessage` 用来显示模型正在输入的内容，`pendingToolCalls` 用来显示"正在执行……"。
 
 ### 2.3 状态是从事件推导出来的
 
@@ -515,10 +515,10 @@ test("steer：运行中插话，模型在下一次请求时看到", async () => 
 
 - **`Agent` 类**：[packages/agent/src/agent.ts](../../packages/agent/src/agent.ts)。`processEvents` 方法对应我们的 `handleEvent`：同样是先根据事件更新状态（`message_end` 时 `messages.push`），再依次 `await` 每个订阅者。`runWithLifecycle` 对应我们 `prompt` 里的 `try/finally`，`activeRun` 里同样存着 `promise` 和 `abortController`。
 - **出错的处理不同**：pi 的 `handleRunFailure` 在循环抛出异常时，会造一条 `stopReason: "error"` 的助手消息，发出 `message_end`、`turn_end`、`agent_end` 事件，`prompt()` 正常返回。我们选择更简单的做法：恢复空闲状态，把异常抛给调用者。
-- **队列**：`PendingMessageQueue` 类，有 `"one-at-a-time"`（默认）和 `"all"` 两种模式（练习 2）。`createLoopConfig` 里的 `getSteeringMessages` 和 `getFollowUpMessages` 就是从这两个队列里取消息。pi 还有 `continue()` 方法：不加新消息，从当前历史继续运行。里程碑 19 实现自动重试时我们会用到它。
+- **队列**：`PendingMessageQueue` 类，有 `"one-at-a-time"`（默认）和 `"all"` 两种模式（练习 2）。`createLoopConfig` 里的 `getSteeringMessages` 和 `getFollowUpMessages` 就是从这两个队列里取消息。pi 还有 `continue()` 方法：不加新消息，从当前历史继续运行。里程碑 20 实现自动重试时我们会用到它。
 - **两层循环**：[agent-loop.ts](../../packages/agent/src/agent-loop.ts) 的 `runLoop`。找到注释 "Outer loop: continues when queued follow-up messages arrive after agent would stop" 和 "Inner loop: process tool calls and steering messages"，结构和我们的一模一样。每轮结束后的 `pendingMessages = (await config.getSteeringMessages?.()) || []` 就是我们的第 ⑥ 步。
 - **并行执行**：`executeToolCallsParallel`。pi 在准备阶段把可以执行的调用包装成函数（`finalizedCalls.push(async () => …)`），准备完之后用 `Promise.all` 一起执行，再按顺序发出工具结果消息。和我们的三个阶段一样。`executeToolCalls` 里还检查了每个工具的 `executionMode`（练习 1）。
-- **界面怎么用这些状态**：pi 的界面在 agent 工作时显示一个"正在工作"的动画，排队的消息显示在输入框上方（`interactive-mode.ts` 里的 `pendingMessagesContainer`）。这些都是根据 `Agent` 的状态和事件画出来的，里程碑 18 我们会做类似的东西。
+- **界面怎么用这些状态**：pi 的界面在 agent 工作时显示一个"正在工作"的动画，排队的消息显示在输入框上方（`interactive-mode.ts` 里的 `pendingMessagesContainer`）。这些都是根据 `Agent` 的状态和事件画出来的，里程碑 19 我们会做类似的东西。
 
 ## 11. 闭卷挑战
 

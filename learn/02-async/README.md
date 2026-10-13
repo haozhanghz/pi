@@ -439,7 +439,7 @@ mini-pi 两种都会用：**模型响应**用异步迭代（里程碑 05、06）
 
 | 练习 | 内容 | 以后在哪里用到 |
 | --- | --- | --- |
-| [ex1-sleep-retry.ts](exercises/ex1-sleep-retry.ts) | `sleep`、失败重试 `retry`、超时 `withTimeout` | 里程碑 19：请求失败自动重试 |
+| [ex1-sleep-retry.ts](exercises/ex1-sleep-retry.ts) | `sleep`、失败重试 `retry`、超时 `withTimeout` | 里程碑 20：请求失败自动重试 |
 | [ex2-parallel.ts](exercises/ex2-parallel.ts) | 串行、并行、"一个失败不影响其他"的并行 | 里程碑 10：并行执行工具 |
 | [ex3-generators.ts](exercises/ex3-generators.ts) | 异步生成器；把任意切分的文字片段重新组装成完整的行 | 里程碑 05：解析流式响应 |
 | [ex4-abort.ts](exercises/ex4-abort.ts) | 可取消的 sleep；中途取消一串步骤 | 里程碑 10、12：取消 agent、终止命令 |

@@ -427,4 +427,4 @@ pi 的终端界面是一个独立的包 [packages/tui](../../packages/tui/)。
 
 ---
 
-上一步：[里程碑 15：上下文压缩](../15-compaction/README.md) · 下一步：[里程碑 17：界面框架](../17-tui/README.md)
+上一步：[里程碑 15：上下文压缩](../15-compaction/README.md) · 下一步：[里程碑 17：组件与差分渲染](../17-tui/README.md)

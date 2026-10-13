@@ -48,7 +48,7 @@ $ mini-pi
 
 ## 路线图
 
-课程分为 7 个阶段、22 个里程碑。每个里程碑都会产出一个**能运行的东西**。
+课程分为 7 个阶段、23 个里程碑。每个里程碑都会产出一个**能运行的东西**。
 
 | 阶段 | 里程碑 | 你会做出 |
 | --- | --- | --- |
@@ -69,11 +69,12 @@ $ mini-pi
 | **4. 记忆与上下文** | [14 会话持久化](14-sessions/README.md) | JSONL 会话文件，`--continue` 继续上次的工作 |
 | | [15 上下文压缩](15-compaction/README.md) | 对话太长时自动总结，长任务不再"失忆" |
 | **5. 精致的终端界面** | [16 终端原理](16-terminal/README.md) | ANSI 转义码、原始模式、按键解析、中文字符宽度 |
-| | [17 组件与差分渲染](17-tui/README.md) | 一个迷你 TUI 框架：不闪烁的渲染、输入框、Markdown |
-| | [18 交互模式](18-interactive/README.md) | 把 Agent 接到终端界面上 |
-| **6. 毕业** | [19 打磨](19-polish/README.md) | **mini-pi v1.0**：斜杠命令、设置、重试、切换模型 |
-| | [20 读懂真正的 pi](20-read-pi/README.md) | 带着问题读 pi 的源码 |
-| | [21 毕业项目：闭卷重写](21-capstone/README.md) | 不看教程、不用 AI，从空目录写出 mini-pi，并通过验收测试 |
+| | [17 组件与差分渲染](17-tui/README.md) | 一个迷你 TUI 框架：不闪烁的差分渲染、单行输入框 |
+| | [18 输入框与 Markdown](18-editor/README.md) | 多行编辑器、可配置的快捷键、Markdown 渲染 |
+| | [19 交互模式](19-interactive/README.md) | 把 Agent 接到终端界面上 |
+| **6. 毕业** | [20 打磨](20-polish/README.md) | **mini-pi v1.0**：斜杠命令、设置、重试、切换模型 |
+| | [21 读懂真正的 pi](21-read-pi/README.md) | 带着问题读 pi 的源码 |
+| | [22 毕业项目：闭卷重写](22-capstone/README.md) | 不看教程、不用 AI，从空目录写出 mini-pi，并通过验收测试 |
 
 建议节奏：每周 5~8 小时的话，阶段 0 约 2~3 周，之后每个阶段 2~4 周，全部完成需要 4~6 个月。**慢一点没关系，弄懂比赶进度重要得多。**
 
@@ -152,7 +153,7 @@ node learn/tools/fake-llm/server.ts
 | `src/tools/`、`src/core/`、`src/modes/` | [packages/coding-agent](../packages/coding-agent) | 编程工具、系统提示词、会话、压缩、命令行和交互模式 |
 | `src/tui/` | [packages/tui](../packages/tui) | 终端界面框架：差分渲染、输入框、Markdown |
 
-mini-pi 刻意省略了 pi 的这些部分（里程碑 20 会带你去读）：扩展系统、技能（skills）、提示词模板、主题、图片、OAuth 登录、几十家服务商的兼容细节、RPC 模式、SDK、会话树导航界面等。
+mini-pi 刻意省略了 pi 的这些部分（里程碑 21 会带你去读）：扩展系统、技能（skills）、提示词模板、主题、图片、OAuth 登录、几十家服务商的兼容细节、RPC 模式、SDK、会话树导航界面等。
 
 ## 其他资料
 
