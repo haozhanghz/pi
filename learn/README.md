@@ -10,29 +10,40 @@
 
 ```
 $ mini-pi
- mini-pi v1.0  ·  deepseek/deepseek-chat  ·  ~/projects/todo-app
+
+ mini-pi 1.0.0
+ Esc 打断 · Ctrl+C 清空输入，按两次退出 · Ctrl+D 退出 · 运行时回车是插
+ 话，+ 开头是排队 · /help 查看所有命令
 
  > 给 src/utils.ts 里的 formatDate 函数加上单元测试，然后运行测试
 
  我先看一下这个函数的实现。
 
  read src/utils.ts
+ │ /** 把日期格式化成 YYYY-MM-DD */
  │ export function formatDate(date: Date): string {
- │   ...（共 42 行）
+ │    if (Number.isNaN(date.getTime())) {
+ │ ……（共 42 行）
+
+ 接下来写测试。
 
  write test/utils.test.ts
- │ 已写入 31 行
+ │ 已写入 21 行
 
  $ node --test test/utils.test.ts
- │ # tests 4
- │ # pass 4
+ │ ……（前面还有 29 行）
+ │ # fail 0
+ │ # cancelled 0
+ │ # skipped 0
+ │ # todo 0
+ │ # duration_ms 168.014768
 
  测试已添加并全部通过：覆盖了普通日期、闰年、月末和非法输入四种情况。
 
- ─────────────────────────────────────────────────────────────
- > 
- ─────────────────────────────────────────────────────────────
- ~/projects/todo-app · deepseek-chat · ↑12.3k ↓1.1k · $0.003 · 上下文 9%
+────────────────────────────────────────────────────────────────────────
+ █
+────────────────────────────────────────────────────────────────────────
+ ~/projects/todo-app · deepseek-chat · ↑6.8k ↓279 · $0.002 · 上下文 2%
 ```
 
 它能：
@@ -44,7 +55,7 @@ $ mini-pi
 - 在终端里提供流畅、不闪烁的交互界面，支持中文输入法，按 Esc 随时打断
 - 不联网、不花钱也能运行和测试（课程提供假模型服务器）
 
-整个 mini-pi 大约 5000 行 TypeScript，**零第三方运行时依赖**：HTTP 通信、流式解析、参数校验、终端界面全部亲手实现。
+整个 mini-pi 大约 8000 行 TypeScript（去掉注释和空行大约 6400 行），**零第三方运行时依赖**：HTTP 通信、流式解析、参数校验、终端界面全部亲手实现。
 
 ## 路线图
 
@@ -62,13 +73,13 @@ $ mini-pi
 | | [07 第二个服务商与模型注册表](07-providers/README.md) | Anthropic 适配器、假模型适配器、模型表 |
 | **2. 让模型动手** | [08 工具调用](08-tools/README.md) | 手动完成一次"模型调用工具"的完整往返 |
 | | [09 Agent Loop](09-agent-loop/README.md) | **整门课的核心**：会自己多步调用工具的循环 |
-| | [10 Agent 类：事件、中断与插话](10-agent-class/README.md) | 有状态的 Agent：订阅事件、随时取消、并行执行工具 |
+| | [10 Agent 类](10-agent-class/README.md) | 有状态的 Agent：订阅事件、随时取消、并行执行工具 |
 | **3. 会写代码的 Agent** | [11 文件工具](11-file-tools/README.md) | `read`、`write`、`edit`、`ls` 四个工具及其测试 |
-| | [12 bash 工具与安全](12-bash/README.md) | 执行命令：超时、取消、输出截断、危险操作确认 |
-| | [13 系统提示词与项目上下文](13-system-prompt/README.md) | **mini-pi v0.1**：一个真正能改代码的命令行 agent |
-| **4. 记忆与上下文** | [14 会话持久化](14-sessions/README.md) | JSONL 会话文件，`--continue` 继续上次的工作 |
+| | [12 bash 工具](12-bash/README.md) | 执行命令：超时、取消、输出截断、危险操作确认 |
+| | [13 系统提示词与命令行](13-system-prompt/README.md) | **mini-pi v0.1**：一个真正能改代码的命令行 agent |
+| **4. 记忆与上下文** | [14 会话](14-sessions/README.md) | JSONL 会话文件，`--continue` 继续上次的工作 |
 | | [15 上下文压缩](15-compaction/README.md) | 对话太长时自动总结，长任务不再"失忆" |
-| **5. 精致的终端界面** | [16 终端原理](16-terminal/README.md) | ANSI 转义码、原始模式、按键解析、中文字符宽度 |
+| **5. 精致的终端界面** | [16 终端基础](16-terminal/README.md) | ANSI 转义码、原始模式、按键解析、中文字符宽度 |
 | | [17 组件与差分渲染](17-tui/README.md) | 一个迷你 TUI 框架：不闪烁的差分渲染、单行输入框 |
 | | [18 输入框与 Markdown](18-editor/README.md) | 多行编辑器、可配置的快捷键、Markdown 渲染 |
 | | [19 交互模式](19-interactive/README.md) | 把 Agent 接到终端界面上 |
@@ -87,6 +98,7 @@ $ mini-pi
 - `README.md`：正文。按"问题 → 例子 → 解决办法"的顺序讲解，然后带你一步步实现。
 - `code/`：参考答案——完成这个里程碑后，你的项目**应该长什么样**。从里程碑 06 开始，它是一个完整的 mini-pi 项目，可以直接运行和测试。
 - `exercises/` 和 `solutions/`（部分里程碑有）：练习和参考答案，练习自带检查。
+- `check.test.ts`（部分里程碑有）：检查脚本。默认检查参考答案；设置 `MY_PI` 就检查你自己的项目，例如 `MY_PI=~/my-pi node --test learn/03-first-call/check.test.ts`。
 
 正文里通常有这些小节：
 
@@ -125,6 +137,8 @@ $ mini-pi
 - 从里程碑 06 开始，正式代码放在 `my-pi/src/`，测试放在 `my-pi/test/`。
 
 每完成一个里程碑就 `git commit` 一次。这样你随时可以回看自己是怎么一步步走过来的。
+
+唯一的例外是最后的毕业项目：它要求你在一个新的空目录里，不看 `my-pi`，把整个程序重新写一遍。
 
 ## 运行环境
 
