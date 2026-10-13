@@ -514,13 +514,14 @@ node --env-file=.env playground/coding-agent.ts --model deepseek/deepseek-chat
 ```ts
 // test/helpers/temp-dir.ts
 export async function makeTempDir(t: TestContext): Promise<string> {
-	const dir = await mkdtemp(join(tmpdir(), "mini-pi-test-"));
+	const dir = await realpath(await mkdtemp(join(tmpdir(), "mini-pi-test-")));
 	t.after(() => rm(dir, { recursive: true, force: true }));
 	return dir;
 }
 ```
 
 - `mkdtemp` 在系统的临时目录（比如 `/tmp`）里创建一个名字唯一的新目录；
+- `realpath` 把路径里的符号链接换成真实的路径。macOS 的临时目录 `/var/folders/...` 其实是 `/private/var/folders/...` 的符号链接，在里面运行的程序用 `process.cwd()` 得到的是后者。后面的测试会比较这两个路径，所以先统一；
 - `t.after(...)` 注册一个函数，在这个测试结束后执行（不管测试成功还是失败）。
 
 用法：
