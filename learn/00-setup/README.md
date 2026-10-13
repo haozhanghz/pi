@@ -183,7 +183,7 @@ node playground/hello.ts
 npm init -y
 ```
 
-它会生成一个 `package.json` 文件。打开它，加上一行 `"type": "module"`，变成类似这样：
+它会生成一个 `package.json` 文件，里面还有 `description`、`main`、`keywords` 这些暂时用不到的字段。把它改成这样：
 
 ```json
 {
@@ -193,6 +193,10 @@ npm init -y
 	"type": "module"
 }
 ```
+
+较新的 npm 会生成 `"type": "commonjs"`，要把 `commonjs` 改成 `module`。`"private": true` 的意思是"这个项目不发布到 npm 上"，可以防止不小心把它公开。
+
+JSON 的格式很严格：键和字符串都要用双引号，相邻两项之间要有逗号，最后一项后面不能有逗号。
 
 `package.json` 描述了这个项目：名字、版本、依赖哪些第三方包、有哪些常用命令。
 
